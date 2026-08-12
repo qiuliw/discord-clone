@@ -1,10 +1,14 @@
-import { Button } from "@base-ui/react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="flex flex-col">
-      <p className="text-2xl text-center">Welcome to My Next.js App!</p>
+    <div>
+      {/* indigo 靛蓝色 ; 500 色阶 */}
+      <p className="test-3xl font-bold text-indigo-500">
+        Hello Discord Clone
+      </p>
       <Button>Click me</Button>
     </div>
   );
