@@ -12,8 +12,8 @@ node_modules
 /coverage
 
 # next.js
-apps/web/.next/
-apps/web/out/
+.next/
+**/out/
 
 # production
 /build

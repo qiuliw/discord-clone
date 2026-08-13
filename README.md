@@ -13,11 +13,12 @@ apps/
 Needs Go 1.22+ and pnpm.
 
 ```bash
-# terminal 1 — API on :8080
-make api
+# both services (API :8080, UI :3000)
+make all
 
-# terminal 2 — UI on :3000
-cd apps/web && pnpm install && pnpm dev
+# or separately
+make api
+make web
 ```
 
 Or `docker compose up --build`.

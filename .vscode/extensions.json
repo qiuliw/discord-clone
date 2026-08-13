@@ -1,5 +1,9 @@
 {
     "recommendations": [
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "usernamehw.errorlens",
+        "dsznajder.es7-react-js-snippets",
+        "seyyedkhandon.firacode",
+        "azemoh.one-monokai"
     ]
 }
