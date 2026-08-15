@@ -1,0 +1,14 @@
+apps/
+.git/
+.gitignore
+.vscode/
+data/
+*.db
+*.db-journal
+Makefile
+README.md
+docker-compose.yml
+deploy/
+.dockerignore
+proto/
+scripts/

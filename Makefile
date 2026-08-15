@@ -1,10 +1,13 @@
-.PHONY: api web all
+.PHONY: user web all sqlc
 
-api:
-	cd apps/api && go run ./cmd/server
+sqlc:
+	cd services/user && sqlc generate
+
+user:
+	go run ./services/user/cmd/server
 
 web:
 	cd apps/web && pnpm dev
 
 all:
-	$(MAKE) -j2 api web
+	$(MAKE) -j2 user web

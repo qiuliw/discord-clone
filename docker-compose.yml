@@ -1,15 +1,18 @@
+name: discord-clone
+
 services:
-  api:
+  user:
     build:
-      context: ./apps/api
+      context: .
+      dockerfile: services/user/Dockerfile
     ports:
       - "8080:8080"
     environment:
       ADDR: ":8080"
       DATABASE_PATH: /data/app.db
-      SESSION_SECRET_PATH: /data/.session_secret
+      JWT_SECRET_PATH: /data/.jwt_secret
     volumes:
-      - api-data:/data
+      - user-data:/data
 
   web:
     build:
@@ -17,9 +20,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      API_PROXY_URL: http://api:8080
+      API_PROXY_URL: http://user:8080
     depends_on:
-      - api
+      - user
 
 volumes:
-  api-data:
+  user-data:
