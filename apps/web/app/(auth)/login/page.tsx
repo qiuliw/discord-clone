@@ -23,7 +23,8 @@ export default function LoginPage() {
         password: String(formData.get("password") ?? ""),
       });
       setUser(data.user);
-      router.push("/");
+      router.replace("/");
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "sign in failed");
     } finally {

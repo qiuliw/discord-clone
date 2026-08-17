@@ -8,6 +8,16 @@ type ErrorBody = {
   error?: string;
 };
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     credentials: "include",
@@ -20,7 +30,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   const data = (await res.json().catch(() => ({}))) as T & ErrorBody;
   if (!res.ok) {
-    throw new Error(data.error || "request failed");
+    throw new ApiError(data.error || "request failed", res.status);
   }
   return data;
 }

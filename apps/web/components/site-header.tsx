@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -11,11 +12,22 @@ import { cn } from "@/lib/utils";
 export function SiteHeader() {
   const { user, loading, setUser } = useAuth();
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleLogout() {
-    await logout();
-    setUser(null);
-    router.push("/");
+    setError("");
+    setLoggingOut(true);
+    try {
+      await logout();
+      setUser(null);
+      router.replace("/login");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "log out failed");
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -29,8 +41,14 @@ export function SiteHeader() {
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {user.email}
             </span>
-            <Button variant="outline" size="sm" onClick={() => void handleLogout()}>
-              Log out
+            {error ? <span className="text-sm text-destructive">{error}</span> : null}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={loggingOut}
+              onClick={() => void handleLogout()}
+            >
+              {loggingOut ? "Logging out..." : "Log out"}
             </Button>
           </>
         ) : (
