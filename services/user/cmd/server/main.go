@@ -3,26 +3,24 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/qiuliw/discord-clone/services/user/internal/config"
 	"github.com/qiuliw/discord-clone/services/user/internal/handler"
 	"github.com/qiuliw/discord-clone/services/user/internal/repository"
 	"github.com/qiuliw/discord-clone/services/user/internal/service"
 )
 
 func main() {
-	addr := envOr("ADDR", ":8080")
-	dbPath := envOr("DATABASE_PATH", "data/app.db")
-	secretPath := envOr("JWT_SECRET_PATH", "data/.jwt_secret")
+	cfg := config.Load()
 
-	database, err := repository.Open(dbPath)
+	database, err := repository.Open(cfg.DatabasePath)
 	if err != nil {
 		log.Fatalf("open database: %v", err)
 	}
 	defer database.Close()
 
-	secret, err := service.LoadOrCreateSecret(secretPath)
+	secret, err := service.LoadOrCreateSecret(cfg.JWTSecretPath)
 	if err != nil {
 		log.Fatalf("jwt secret: %v", err)
 	}
@@ -30,20 +28,13 @@ func main() {
 	auth := service.NewAuth(repository.NewUserRepository(database), secret)
 
 	srv := &http.Server{
-		Addr:              addr,
+		Addr:              cfg.Addr,
 		Handler:           handler.New(handler.NewAuthHandler(auth)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	log.Printf("user service listening on %s", addr)
+	log.Printf("user service listening on %s", cfg.Addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-}
-
-func envOr(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }

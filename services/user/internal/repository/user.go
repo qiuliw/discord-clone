@@ -25,6 +25,7 @@ func (r *UserRepository) Create(email, name, passwordHash string) (domain.User, 
 		PasswordHash: passwordHash,
 	})
 	if err != nil {
+		// SQLite 唯一约束没有稳定 sentinel，只能从错误文案识别邮箱冲突。
 		if strings.Contains(strings.ToUpper(err.Error()), "UNIQUE") {
 			return domain.User{}, domain.ErrEmailTaken
 		}

@@ -21,10 +21,13 @@ func Open(path string) (*sql.DB, error) {
 		return nil, fmt.Errorf("create data dir: %w", err)
 	}
 
+	// _pragma=foreign_keys(1) 开启外键约束
+	// _pragma=busy_timeout(5000) 设置超时
 	database, err := sql.Open("sqlite", path+"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)")
 	if err != nil {
 		return nil, err
 	}
+	// sqlite 天然单写，串行。并行会无用竞争
 	database.SetMaxOpenConns(1)
 
 	if err := migrateUp(database); err != nil {
@@ -35,7 +38,9 @@ func Open(path string) (*sql.DB, error) {
 	return database, nil
 }
 
+// golang-migrate 执行迁移
 func migrateUp(database *sql.DB) error {
+
 	src, err := iofs.New(migrations.FS, ".")
 	if err != nil {
 		return fmt.Errorf("migration source: %w", err)
@@ -52,6 +57,7 @@ func migrateUp(database *sql.DB) error {
 		if !alreadyExists(err) {
 			return fmt.Errorf("migrate up: %w", err)
 		}
+		// 库表已存在但 schema_migrations 无版本时，基线到 1，避免反复建表失败。
 		if _, _, vErr := m.Version(); errors.Is(vErr, migrate.ErrNilVersion) {
 			if err := m.Force(1); err != nil {
 				return fmt.Errorf("migrate baseline: %w", err)
