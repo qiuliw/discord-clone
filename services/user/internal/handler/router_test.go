@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/qiuliw/discord-clone/pkg/middleware"
 )
 
 func TestAuthRoutesExposeOnlyMeAsProtected(t *testing.T) {
@@ -40,7 +42,7 @@ func TestAuthRoutesExposeOnlyMeAsProtected(t *testing.T) {
 }
 
 func TestCORSPreflightRunsBeforeAuthentication(t *testing.T) {
-	router := New(NewAuthHandler(nil))
+	router := middleware.CORS([]string{"localhost"}, New(NewAuthHandler(nil)))
 	res := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodOptions, "/api/auth/me", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
