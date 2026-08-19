@@ -1,13 +1,15 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+	"net/url"
+)
 
-func CORS(next http.Handler) http.Handler {
-	allowedOrigins := map[string]bool{
-		"http://localhost:3000": true,
-		"http://localhost:5173": true,
+func CORS(allowedHosts []string, next http.Handler) http.Handler {
+	hosts := make(map[string]bool, len(allowedHosts))
+	for _, h := range allowedHosts {
+		hosts[h] = true
 	}
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
@@ -18,7 +20,8 @@ func CORS(next http.Handler) http.Handler {
 		}
 
 		// 不允许的 Origin
-		if !allowedOrigins[origin] {
+		u, err := url.Parse(origin)
+		if err != nil || !hosts[u.Hostname()] {
 			http.Error(w, "CORS origin denied", http.StatusForbidden)
 			return
 		}

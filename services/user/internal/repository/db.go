@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -38,37 +37,28 @@ func Open(path string) (*sql.DB, error) {
 	return database, nil
 }
 
-// golang-migrate 执行迁移
+// migrateUp 执行数据库迁移。迁移语句使用 IF NOT EXISTS，
+// 全新库与已存在 users 表的旧库都能幂等通过。
 func migrateUp(database *sql.DB) error {
-
+	// 来自嵌入的文件系统
 	src, err := iofs.New(migrations.FS, ".")
 	if err != nil {
 		return fmt.Errorf("migration source: %w", err)
 	}
+	// 注册 migrate 的 sqlite 驱动
 	driver, err := sqlite.WithInstance(database, &sqlite.Config{})
 	if err != nil {
 		return fmt.Errorf("migration driver: %w", err)
 	}
+	// 创建 migrate 实例
+	// sqlc.yaml 的文件系统源与 sqlite 的驱动实例
 	m, err := migrate.NewWithInstance("iofs", src, "sqlite", driver)
 	if err != nil {
 		return fmt.Errorf("migrate: %w", err)
 	}
+	// 执行迁移
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		if !alreadyExists(err) {
-			return fmt.Errorf("migrate up: %w", err)
-		}
-		// 库表已存在但 schema_migrations 无版本时，基线到 1，避免反复建表失败。
-		if _, _, vErr := m.Version(); errors.Is(vErr, migrate.ErrNilVersion) {
-			if err := m.Force(1); err != nil {
-				return fmt.Errorf("migrate baseline: %w", err)
-			}
-			return nil
-		}
 		return fmt.Errorf("migrate up: %w", err)
 	}
 	return nil
-}
-
-func alreadyExists(err error) bool {
-	return strings.Contains(strings.ToLower(err.Error()), "already exists")
 }

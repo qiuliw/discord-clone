@@ -1,10 +1,6 @@
 package handler
 
-import (
-	"net/http"
-
-	"github.com/qiuliw/discord-clone/pkg/middleware"
-)
+import "net/http"
 
 // Mounter 将一组路由注册到 mux 上。
 type Mounter interface {
@@ -18,5 +14,5 @@ func New(mounts ...Mounter) http.Handler {
 	for _, m := range mounts {
 		m.Mount(mux)
 	}
-	return middleware.CORS(mux)
+	return mux
 }

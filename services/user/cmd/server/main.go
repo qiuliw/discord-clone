@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/qiuliw/discord-clone/pkg/middleware"
 	"github.com/qiuliw/discord-clone/services/user/internal/config"
 	"github.com/qiuliw/discord-clone/services/user/internal/handler"
 	"github.com/qiuliw/discord-clone/services/user/internal/repository"
@@ -29,7 +30,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           handler.New(handler.NewAuthHandler(auth)),
+		Handler:           middleware.CORS(cfg.CORSAllowedHosts, handler.New(handler.NewAuthHandler(auth))),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
