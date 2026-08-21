@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 
-import { AuthProvider } from "@/components/auth-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/lib/auth-dal";
 import "./globals.css";
@@ -20,12 +21,26 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const initialUser = await getCurrentUser();
 
   return (
-    <html lang="en" className={`${font.variable} ${font.className} h-full antialiased`}>
+    <html
+      lang="en"
+      // 抑制 React 的水合警告，
+      suppressHydrationWarning
+      className={`${font.variable} ${font.className} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
-        <AuthProvider initialUser={initialUser}>
-          <SiteHeader />
-          {children}
-        </AuthProvider>
+        <ThemeProvider
+          // 通过修改 class 来切换主题，避免使用 自定义 属性，减少 CSS 选择器的复杂度
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          // 主题切换时关闭动画
+          disableTransitionOnChange
+        >
+          <AuthProvider initialUser={initialUser}>
+            <SiteHeader />
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
